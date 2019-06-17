@@ -1,4 +1,4 @@
-#attempt with Reverse Indexing shiz
+#attempt with Reverse Indexing
 from flask import Flask, request, jsonify,session, g, redirect, url_for, abort, \
      render_template, flash
 from flask_cors import CORS, cross_origin
@@ -7,6 +7,8 @@ import datetime
 import json
 import requests
 import pickle
+import sqlite3
+
 
 from sklearn.neighbors import NearestNeighbors
 
@@ -51,6 +53,7 @@ def start():
 @app.route("/getNews", methods = ["GET","POST"])
 def getNews():
     q = request.args.get("q","default")
+    user = request.args.get("user","default")
     global g_tensors
     global keywords
     global keywordset
@@ -69,18 +72,27 @@ def getNews():
     tensor = np.zeros(MAX_LEN)
     toSend.append(meaning) 
 
+    con = sqlite3.connect("database.db")
+    cur = con.cursor()
+
     for item in meaning.split():
         if item.lower() in worddict:
+            cur.execute("INSERT INTO UserData VALUES (?,?,?)", (user, item, 1))
+            con.commit()
             synset = [item.lower()]
-            synset.extend([x[0] for x in model.most_similar([item.lower()])])
+            synset.extend([x[0] for x in model.most_similar([model.wv[item.lower()]])])
             for syn in synset:
                 tensor[worddict[syn.lower()]] += 1
                 toSend.append(syn)
+                cur.execute("INSERT INTO UserData VALUES (?,?,?)", (user, syn, 2))
+                con.commit()
     if(q not in keywordset):
         g_tensors.append(tensor)
         keywords.append(q)
         keywordset.add(q)
     return jsonify( data=toSend )
+
+
 
 @app.route("/getRec", methods = ["GET","POST"])
 def getRec():
@@ -103,7 +115,7 @@ def getRec():
     for item in meaning.split():
         if item.lower() in worddict:
             synset = [item.lower()]
-            synset.extend([x[0] for x in model.most_similar([item.lower()])])
+            synset.extend([x[0] for x in model.most_similar([item.lower()], 20)])
             for syn in synset:
                 j = worddict[syn.lower()]
                 tensor[j] += 1
@@ -130,14 +142,59 @@ def getRec():
     for i in range(len(g_tensors)):
         print(keywords[i], g_tensors[i].sum())
 
-    
+    return jsonify( data=toSend )
+
+@app.route("/getRUserRec", methods = ["GET","POST"])
+def getUserRec():
+    Recom  = {}
+    user = request.args.get("user","default")
+
+    con = sqlite3.connect("database.db")
+    cur = con.cursor()
+
+    rows = con.execute("SELECT word FROM UserData WHERE user = (?) and level = 1", (user,)).fetchall()
+
+
+    global g_tensors
+    global keywords
+    global keywordset
+    toSend = []
+    tensor = np.zeros(MAX_LEN)
+
+    print(rows)
 
     
 
-    
+    for item in rows:
+        if item[0].lower() in worddict:
+            synset = [item[0].lower()]
+            print(item[0])
+            print("Most Simlar = ", model.most_similar([model.wv[item[0].lower()]], 20))
+            synset.extend([x[0] for x in model.most_similar([model.wv[item[0].lower()]], 20)])
+            for syn in synset:
+                j = worddict[syn.lower()]
+                tensor[j] += 1
+                for i in range(len(g_tensors)):
+                    if(g_tensors[i][j]>0):
+                        if(str(i) in Recom):
+                            Recom[str(i)] += g_tensors[i][j]
+                        else:
+                            Recom[str(i)] = g_tensors[i][j]
+
+    Recom_list = sorted(Recom.items(), key=lambda kv: kv[1], reverse = True)
+    print("|",Recom_list,"|")
+    if(len(Recom_list) > 5):
+        for item in Recom_list:
+            toSend.append(keywords[int(item[0])])
+
+
+    for i in range(len(g_tensors)):
+        print(keywords[i], g_tensors[i].sum())
 
     return jsonify( data=toSend )
-        
+
+ 
+
 
 def save():
     with open("tensors.pickle") as handle:
@@ -156,6 +213,6 @@ atexit.register(save)
 if __name__ == "__main__":
     
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.run(host = '0.0.0.0')
+    app.run(host = '0.0.0.0', debug= True )
 
 
