@@ -1,4 +1,4 @@
-#attempt with Reverse Indexing
+#attempt with Reverse Indexing shiz
 from flask import Flask, request, jsonify,session, g, redirect, url_for, abort, \
      render_template, flash
 from flask_cors import CORS, cross_origin
@@ -8,6 +8,10 @@ import json
 import requests
 import pickle
 import sqlite3
+
+import nltk
+from nltk.corpus import stopwords
+stop = set(stopwords.words('english'))
 
 
 from sklearn.neighbors import NearestNeighbors
@@ -20,6 +24,8 @@ from gensim.models import word2vec
 model = word2vec.Word2Vec.load('text8.model')
 
 model_vocab = list(model.wv.vocab.keys())
+
+
 
 
 f = open("10kwords.txt","r")
@@ -80,7 +86,7 @@ def getNews():
             cur.execute("INSERT INTO UserData VALUES (?,?,?)", (user, item, 1))
             con.commit()
             synset = [item.lower()]
-            synset.extend([x[0] for x in model.most_similar([model.wv[item.lower()]])])
+            synset.extend([x[0] for x in model.most_similar([model.wv[item.lower()]], topn=10)])
             for syn in synset:
                 tensor[worddict[syn.lower()]] += 1
                 toSend.append(syn)
@@ -113,9 +119,9 @@ def getRec():
     meaning = arr[0]['snippet']
 
     for item in meaning.split():
-        if item.lower() in worddict:
+        if item.lower() in worddict and item.lower() not in stop:
             synset = [item.lower()]
-            synset.extend([x[0] for x in model.most_similar([item.lower()], 20)])
+            synset.extend([x[0] for x in model.most_similar([item.lower()], topn=20) if x[0] not in stop])
             for syn in synset:
                 j = worddict[syn.lower()]
                 tensor[j] += 1
@@ -154,6 +160,8 @@ def getUserRec():
 
     rows = con.execute("SELECT word FROM UserData WHERE user = (?) and level = 1", (user,)).fetchall()
 
+    print(rows)
+
 
     global g_tensors
     global keywords
@@ -169,8 +177,9 @@ def getUserRec():
         if item[0].lower() in worddict:
             synset = [item[0].lower()]
             print(item[0])
-            print("Most Simlar = ", model.most_similar([model.wv[item[0].lower()]], 20))
-            synset.extend([x[0] for x in model.most_similar([model.wv[item[0].lower()]], 20)])
+            print([model.wv[item[0].lower()]])
+            print("Most Simlar = ", model.most_similar([model.wv[item[0].lower()]], topn=20))
+            synset.extend([x[0] for x in model.most_similar([model.wv[item[0].lower()]], topn=20)])
             for syn in synset:
                 j = worddict[syn.lower()]
                 tensor[j] += 1
