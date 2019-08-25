@@ -13,6 +13,12 @@ import nltk
 from nltk.corpus import stopwords
 stop = set(stopwords.words('english'))
 
+nltk.download('words')
+from nltk.corpus import words
+
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
 
 from sklearn.neighbors import NearestNeighbors
 
@@ -34,13 +40,17 @@ f.close()
 
 worddict = {}
 i=0
-for word in tenwords:
-    worddict[word.strip().lower()] = i
-    i+=1 
+# for word in words.words():
+#     worddict[word.strip().lower()] = i
+#     i+=1
+    
 for word in model_vocab:
-    if(word not in worddict):
+    if(word.strip().lower() not in worddict):
         worddict[word.strip().lower()] = i
-        i+=1 
+        # print(i, len(list(worddict.keys())))
+        i+=1
+
+ 
 
 
 app = Flask(__name__)
@@ -51,6 +61,7 @@ keywords = []
 g_tensors = []
 
 MAX_LEN = len(list(worddict.keys()))
+print("Length of worddict = ",MAX_LEN)
 
 @app.route("/")
 def start():
@@ -58,6 +69,9 @@ def start():
 
 @app.route("/getNews", methods = ["GET","POST"])
 def getNews():
+
+    trainNeuralNet()
+
     q = request.args.get("q","default")
     user = request.args.get("user","default")
     global g_tensors
@@ -88,6 +102,8 @@ def getNews():
             synset = [item.lower()]
             synset.extend([x[0] for x in model.most_similar([model.wv[item.lower()]], topn=10)])
             for syn in synset:
+                print(syn.lower())
+                print(worddict[syn.lower()])
                 tensor[worddict[syn.lower()]] += 1
                 toSend.append(syn)
                 cur.execute("INSERT INTO UserData VALUES (?,?,?)", (user, syn, 2))
@@ -217,6 +233,18 @@ def save():
 
 import atexit
 atexit.register(save)
+
+def trainNeuralNet():
+
+    model = Sequential()
+    model.add(Dense(100, input_shape = (100,1)))
+    model.add(Dense(1))
+
+    model.summary()
+
+
+
+
 
 
 if __name__ == "__main__":
