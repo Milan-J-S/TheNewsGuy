@@ -3,12 +3,14 @@ from sklearn.neighbors import NearestNeighbors
 
 sentences = word2vec.Text8Corpus('text8')
 
+import nltk
+from nltk.corpus import words
 
 words = []
 f = open("10kwords.txt","r")
 tenwords = f.readlines()
 f.close()
-for item in tenwords:
+for item in nltk.corpus.words.words():
     words.append(item.strip().lower())
 
 model = word2vec.Word2Vec(sentences, size=50, window=5, min_count=1, workers=4,hs=1,negative=0)
