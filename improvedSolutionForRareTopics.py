@@ -70,7 +70,10 @@ def start():
 @app.route("/getNews", methods = ["GET","POST"])
 def getNews():
 
-    trainNeuralNet()
+    mockMatrix = [[1,2,3],[1,3,2], [2,1,3], [2,2,4]]
+    scores = [0.9, 0.8, 0.92, 0.7]
+
+    trainNeuralNet(mockMatrix, scores, 'Milan')
 
     q = request.args.get("q","default")
     user = request.args.get("user","default")
@@ -234,13 +237,25 @@ def save():
 import atexit
 atexit.register(save)
 
-def trainNeuralNet():
+def trainNeuralNet( inp, scores, personName ):
 
+    
     model = Sequential()
-    model.add(Dense(100, input_shape = (100,1)))
-    model.add(Dense(1))
+    model.add(Dense(100, input_shape = (3,),activation='elu'))
+    model.add(Dense(50, activation='sigmoid'))
+    model.add(Dense(1, activation='sigmoid'))
+    
+    model.compile( optimizer='adam', loss = 'mse', metrics=['mae'] )
 
     model.summary()
+
+    model.save( personName+'.h5' )
+
+    model.fit(np.array(inp), scores, batch_size=10, epochs = 1000, verbose =1)
+
+    model.evaluate([inp], scores)
+
+    print(model.predict([inp]))
 
 
 
