@@ -262,7 +262,10 @@ def trainNeuralNet( inp, scores, personName ):
 @app.route('/validated', methods = ["GET","POST"])
 def validated():
     q = request.args.get("q","")
-    print("USER VALIDATED THE QUERY", q)
+    score = request.args.get("score",0)
+
+
+    print("USER VALIDATED THE QUERY", q, " with score = ", score)
 
     return jsonify(success = 200)
 
