@@ -15,4 +15,8 @@ rows = con.execute("SELECT * FROM UserData WHERE LEVEL = 2 ").fetchall()
 print("LEVEL 2 DATA")
 print(rows)
 
+rows = con.execute("SELECT * FROM Validation ").fetchall()
+print("LEVEL 2 DATA")
+print(rows)
+
 
