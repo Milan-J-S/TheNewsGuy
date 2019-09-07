@@ -99,11 +99,11 @@ def getNews():
     cur = con.cursor()
 
     for item in meaning.split():
-        if item.lower() in worddict:
+        if item.lower() in worddict and item.lower() not in stop:
             cur.execute("INSERT INTO UserData VALUES (?,?,?)", (user, item, 1))
             con.commit()
             synset = [item.lower()]
-            synset.extend([x[0] for x in model.most_similar([model.wv[item.lower()]], topn=10)])
+            synset.extend([x[0] for x in model.most_similar([item.lower()], topn=20) if x[0] not in stop])
             for syn in synset:
                 print(syn.lower())
                 print(worddict[syn.lower()])
@@ -123,6 +123,7 @@ def getNews():
 def getRec():
     Recom = {}
     q = request.args.get("q","default")
+    user = request.args.get("user","default")
     print("q")
     global g_tensors
     global keywords
@@ -137,11 +138,18 @@ def getRec():
 
     meaning = arr[0]['snippet']
 
+    con = sqlite3.connect("database.db")
+    cur = con.cursor()
+
     for item in meaning.split():
         if item.lower() in worddict and item.lower() not in stop:
+            cur.execute("INSERT INTO UserData VALUES (?,?,?)", (user, item, 1))
+            con.commit()
             synset = [item.lower()]
             synset.extend([x[0] for x in model.most_similar([item.lower()], topn=20) if x[0] not in stop])
             for syn in synset:
+                cur.execute("INSERT INTO UserData VALUES (?,?,?)", (user, syn, 2))
+                con.commit()
                 j = worddict[syn.lower()]
                 tensor[j] += 1
                 for i in range(len(g_tensors)):
@@ -167,7 +175,7 @@ def getRec():
     for i in range(len(g_tensors)):
         print(keywords[i], g_tensors[i].sum())
 
-    return render_template('main.html',  items=toSend )
+    return render_template('main.html',  items=toSend, user = user  )
 
 @app.route("/getRUserRec", methods = ["GET","POST"])
 def getUserRec():
@@ -263,9 +271,16 @@ def trainNeuralNet( inp, scores, personName ):
 def validated():
     q = request.args.get("q","")
     score = request.args.get("score",0)
+    user = request.args.get("user", "")
 
 
-    print("USER VALIDATED THE QUERY", q, " with score = ", score)
+    print("USER", user, " VALIDATED THE QUERY", q, " with score = ", score)
+
+    con = sqlite3.connect("database.db")
+    cur = con.cursor()
+
+    cur.execute('INSERT INTO Validation VALUES (?,?,?)', (user, q, score))
+    con.commit()
 
     return jsonify(success = 200)
 

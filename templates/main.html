@@ -19,7 +19,7 @@
                 scoreElement = document.getElementById(event.target.id+'_score');
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', '/validated?q='+event.target.id+'&score='+scoreElement.value);
+                xhr.open('GET', '/validated?q='+event.target.id+'&score='+scoreElement.value+"&user={{user}}");
                 xhr.send();
 
             }
