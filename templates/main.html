@@ -1,0 +1,14 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <h3>Recommendations</h3>
+        {%for item in items%}
+            <a href = '/validated?q={{item}}'><h3>{{item}}</h3></a>
+            {%endfor%}
+
+    </body>
+
+
+</html>

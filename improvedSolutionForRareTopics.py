@@ -167,7 +167,7 @@ def getRec():
     for i in range(len(g_tensors)):
         print(keywords[i], g_tensors[i].sum())
 
-    return jsonify( data=toSend )
+    return render_template('main.html',  items=toSend )
 
 @app.route("/getRUserRec", methods = ["GET","POST"])
 def getUserRec():
@@ -259,7 +259,12 @@ def trainNeuralNet( inp, scores, personName ):
 
 
 
+@app.route('/validated', methods = ["GET","POST"])
+def validated():
+    q = request.args.get("q","")
+    print("USER VALIDATED THE QUERY", q)
 
+    return jsonify(success = 200)
 
 
 if __name__ == "__main__":
