@@ -141,6 +141,9 @@ def getRec():
     con = sqlite3.connect("database.db")
     cur = con.cursor()
 
+    lv1score = 0
+    lv2score = 0
+
     for item in meaning.split():
         if item.lower() in worddict and item.lower() not in stop:
             cur.execute("INSERT INTO UserData VALUES (?,?,?)", (user, item, 1))
@@ -163,7 +166,7 @@ def getRec():
     print("|",Recom_list,"|")
     if(len(Recom_list) > 3):
         for item in Recom_list[:3]:
-            toSend.append(keywords[int(item[0])])
+            toSend.append((keywords[int(item[0])], item[1]))
 
 
 
@@ -175,7 +178,7 @@ def getRec():
     for i in range(len(g_tensors)):
         print(keywords[i], g_tensors[i].sum())
 
-    return render_template('main.html',  items=toSend, user = user  )
+    return render_template('main.html',  items=toSend, user = user )
 
 @app.route("/getRUserRec", methods = ["GET","POST"])
 def getUserRec():
@@ -247,7 +250,6 @@ atexit.register(save)
 
 def trainNeuralNet( inp, scores, personName ):
 
-    
     model = Sequential()
     model.add(Dense(100, input_shape = (3,),activation='elu'))
     model.add(Dense(50, activation='sigmoid'))
@@ -257,11 +259,11 @@ def trainNeuralNet( inp, scores, personName ):
 
     model.summary()
 
-    model.save( personName+'.h5' )
+    # model.save( personName+'.h5' )
 
     model.fit(np.array(inp), scores, batch_size=10, epochs = 1000, verbose =1)
 
-    model.evaluate([inp], scores)
+    model.evaluate([inp], scores) 
 
     print(model.predict([inp]))
 
@@ -272,6 +274,9 @@ def validated():
     q = request.args.get("q","")
     score = request.args.get("score",0)
     user = request.args.get("user", "")
+    lv1score = request.args.get("lv1score", 0)
+    lv2score = request.args.get("lv2score", 0)
+
 
 
     print("USER", user, " VALIDATED THE QUERY", q, " with score = ", score)
@@ -280,6 +285,9 @@ def validated():
     cur = con.cursor()
 
     cur.execute('INSERT INTO Validation VALUES (?,?,?)', (user, q, score))
+    con.commit()
+
+    cur.execute('INSERT INTO TrainingSet VALUES (?,?,?, ?, ?)', (user, q, score, lv1score, lv2score))
     con.commit()
 
     return jsonify(success = 200)
