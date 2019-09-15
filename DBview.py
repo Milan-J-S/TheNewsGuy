@@ -16,7 +16,11 @@ print("LEVEL 2 DATA")
 print(rows)
 
 rows = con.execute("SELECT * FROM Validation ").fetchall()
-print("LEVEL 2 DATA")
+print("VALIDATION DATA")
+print(rows)
+
+rows = con.execute("SELECT * FROM TrainingSet ").fetchall()
+print("TRAINING SET DATA")
 print(rows)
 
 

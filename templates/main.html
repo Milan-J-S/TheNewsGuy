@@ -4,22 +4,23 @@
     </head>
     <body>
         <h3>Recommendations</h3>
-        {%for item in items%}
+        {%for (item, score) in items%}
         <div>
             <a href = '/validated?q={{item}}'><h3>{{item}}</h3></a>
             <input placeholder='score' id='{{item}}_score'/>
-            <button id='{{item}}' onClick='sendScore(event)'>Score</button>
+            <button id='{{item}}' onClick='sendScore(event,{{score}})'>Score</button>
         </div>
 
             {%endfor%}
             <script type = 'text/javascript'>
 
-            function sendScore(event)
+            function sendScore(event, score)
             {
+                console.log(score)
                 scoreElement = document.getElementById(event.target.id+'_score');
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', '/validated?q='+event.target.id+'&score='+scoreElement.value+"&user={{user}}");
+                xhr.open('GET', '/validated?q='+event.target.id+'&score='+scoreElement.value+"&user={{user}}&lv1score="+score+"&lv2score="+score);
                 xhr.send();
 
             }
