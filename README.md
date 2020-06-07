@@ -4,6 +4,8 @@ A news recommender based on collaborative filtering
 
 To run project pip install flask, flask_cors, time, datetime, json, requests, sklearn, numpy and pickle.
 
+The text8 corpus has to be downloaded from http://mattmahoney.net/dc/text8.zip and unzipped in the root folder of this project
+
 The latest solution server is in improvedSolutionForRareTopics.py
 To run this, the script synonyms.py must be executed first, as this creates a model for synonyms( for second tier similarity )
 
