@@ -1,5 +1,7 @@
 # TheNewsGuy
 
+DO NOT RUN THIS ON A UNDER-POWERED SYSTEM. IT WILL BE DESTROYED
+
 A news recommender based on collaborative filtering
 
 To run project pip install flask, flask_cors, time, datetime, json, requests, sklearn, numpy and pickle.
