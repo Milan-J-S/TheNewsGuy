@@ -17,7 +17,7 @@ def start():
 
 @app.route("/getNews")
 def getNews():
-    link = "https://www.googleapis.com/customsearch/v1?cx=018255618520952350685:8uiwqx6yz7m&key=AIzaSyDchAHDPniQvbs3FxRbr_dZyTbZQqmHs_M&q=Mod"
+    link = "https://www.googleapis.com/customsearch/v1?cx=018255618520952350685:8uiwqx6yz7m&key=<Enter Key here>&q=Mod"
     f = requests.get(link)
     print(f)
     arr = json.loads(f.text)
