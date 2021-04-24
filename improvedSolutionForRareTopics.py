@@ -80,7 +80,7 @@ def getNews():
     global g_tensors
     global keywords
     global keywordset
-    link = "https://www.googleapis.com/customsearch/v1/siterestrict?cx=018255618520952350685:fthcb7cnd4m&key=AIzaSyBMZdR1aOUuf4LgeWkyvnfk7LKCXBK6t6M&q="+q
+    link = "https://www.googleapis.com/customsearch/v1/siterestrict?cx=018255618520952350685:fthcb7cnd4m&key=<Enter Key Here>&q="+q
     f = requests.get(link)
     print(f)
     arr = json.loads(f.text)
